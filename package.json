@@ -1,0 +1,29 @@
+{
+  "name": "map-svg-generator",
+  "version": "1.0.0",
+  "description": "Generate SVG maps from Google Maps, OSRM routes",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "generate": "node src/index.js",
+    "clean": "del result\\map.svg"
+  },
+  "dependencies": {
+    "@mapbox/polyline": "^1.2.1",
+    "axios": "^1.7.2",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "puppeteer": "^22.15.0",
+    "url": "^0.11.1"
+  },
+  "keywords": [
+    "svg",
+    "maps",
+    "google-maps",
+    "osrm",
+    "route",
+    "routing"
+  ],
+  "author": "",
+  "license": "MIT"
+}

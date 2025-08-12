@@ -1,0 +1,23 @@
+# Dependencies
+/node_modules
+yarn-error.log
+
+# Environment variables (содержат API ключи)
+.env
+
+# Results
+result/*.svg
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Puppeteer
+.cache/
