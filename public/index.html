@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSRM SVG Map Generator - Создание векторных карт маршрутов</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Бесплатный генератор SVG карт из OSRM маршрутов. Создавайте векторные карты для печати и дизайна из маршрутов OpenStreetMap.">
+    <meta name="keywords" content="OSRM, SVG карты, генератор маршрутов, векторные карты, OpenStreetMap, карты для печати, маршруты SVG">
+    <meta name="author" content="DataforumIDP">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="ru">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="OSRM SVG Map Generator - Создание векторных карт маршрутов">
+    <meta property="og:description" content="Бесплатный онлайн инструмент для создания SVG карт из OSRM маршрутов. Идеально для дизайна и печати.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/DataforumIDP/osrm-svg-path">
+    <meta property="og:site_name" content="OSRM SVG Generator">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OSRM SVG Map Generator">
+    <meta name="twitter:description" content="Создавайте векторные SVG карты из OSRM маршрутов онлайн бесплатно">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "OSRM SVG Map Generator",
+      "description": "Онлайн генератор SVG карт из OSRM маршрутов",
+      "url": "https://github.com/DataforumIDP/osrm-svg-path",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-container {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .status {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.loading {
+            color: #667eea;
+        }
+
+        .status.success {
+            color: #28a745;
+        }
+
+        .status.error {
+            color: #dc3545;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .example-url {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #e1e5e9;
+        }
+
+        .example-url:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .instruction-box {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f4fd;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2563eb;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .download-link {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .github-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #24292e;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .github-link:hover {
+            background: #444d56;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(36, 41, 46, 0.3);
+        }
+
+        .github-link:before {
+            content: "⭐";
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ OSRM SVG Map Generator</h1>
+            <p>Создавайте векторные SVG карты из маршрутов OSRM для печати и дизайна</p>
+        </div>
+
+        <form id="mapForm">
+            <div class="form-group">
+                <label for="urlInput">URL маршрута:</label>
+                <input 
+                    type="url" 
+                    id="urlInput" 
+                    class="url-input" 
+                    placeholder="Вставьте URL маршрута..." 
+                    required
+                >
+            </div>
+
+            <button type="submit" id="generateBtn" class="generate-btn">
+                🚀 Сгенерировать SVG маршрут
+            </button>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="status loading" id="statusText">Генерируем маршрут...</div>
+            </div>
+
+            <div class="download-link" id="downloadLink">
+                <a href="#" class="download-btn" id="downloadBtn">
+                    📥 Скачать SVG маршрут
+                </a>
+            </div>
+        </form>
+
+        <div class="examples">
+            <h3>� Создать маршрут:</h3>
+            <div class="example-url" onclick="openOSRM()">
+                📍 Открыть OSRM Demo (map.project-osrm.org)
+            </div>
+            <div style="margin-top: 15px; padding: 15px; background: #e8f4fd; border-radius: 8px; font-size: 14px; color: #2563eb;">
+                <strong>Инструкция:</strong><br>
+                1. Откройте OSRM Demo по ссылке выше<br>
+                2. Постройте маршрут между двумя точками<br>
+                3. Скопируйте URL из адресной строки<br>
+                4. Вставьте URL в поле выше и нажмите "Сгенерировать"
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Поддерживаемые сервисы: OSRM (Open Source Routing Machine)</p>
+            <a href="https://github.com/DataforumIDP/osrm-svg-path" target="_blank" rel="noopener" class="github-link">
+                GitHub Repository
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('mapForm');
+        const urlInput = document.getElementById('urlInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const statusText = document.getElementById('statusText');
+        const downloadLink = document.getElementById('downloadLink');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        function useExample(element) {
+            urlInput.value = element.textContent.trim();
+        }
+
+        function openOSRM() {
+            window.open('https://map.project-osrm.org/', '_blank');
+        }
+
+        function updateProgress(percent, status) {
+            progressFill.style.width = percent + '%';
+            statusText.textContent = status;
+        }
+
+        function showProgress() {
+            progressContainer.style.display = 'block';
+            downloadLink.style.display = 'none';
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Генерируем...';
+            updateProgress(10, 'Отправляем запрос...');
+        }
+
+        function hideProgress() {
+            progressContainer.style.display = 'none';
+            generateBtn.disabled = false;
+            generateBtn.textContent = '🚀 Сгенерировать SVG карту';
+        }
+
+        function showSuccess(downloadUrl) {
+            updateProgress(100, '✅ Карта создана успешно!');
+            statusText.className = 'status success';
+            
+            downloadBtn.href = downloadUrl;
+            downloadBtn.download = 'map.svg';
+            downloadLink.style.display = 'block';
+            
+            setTimeout(() => {
+                hideProgress();
+            }, 2000);
+        }
+
+        function showError(message) {
+            statusText.textContent = '❌ Ошибка: ' + message;
+            statusText.className = 'status error';
+            
+            setTimeout(() => {
+                hideProgress();
+                statusText.className = 'status loading';
+            }, 3000);
+        }
+
+        async function generateMap(url) {
+            try {
+                showProgress();
+                
+                updateProgress(30, 'Обрабатываем URL...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                updateProgress(50, 'Получаем данные маршрута...');
+                
+                const apiUrl = `/api/map?url=${encodeURIComponent(url)}`;
+                const response = await fetch(apiUrl);
+                
+                updateProgress(80, 'Генерируем SVG...');
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Ошибка сервера');
+                }
+                
+                updateProgress(90, 'Подготавливаем файл...');
+                
+                // Создаем blob для скачивания
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);
+                
+                updateProgress(100, 'Готово!');
+                showSuccess(downloadUrl);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            }
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = urlInput.value.trim();
+            if (!url) {
+                alert('Пожалуйста, введите URL маршрута');
+                return;
+            }
+            
+            await generateMap(url);
+        });
+
+        // Автофокус на поле ввода
+        urlInput.focus();
+    </script>
+</body>
+</html>

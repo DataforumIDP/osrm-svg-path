@@ -1291,7 +1291,8 @@ class AdvancedMapSVGGenerator {
         const waypoints = [];
         
         // OSRM URL имеет формат: ?loc=lat,lon&loc=lat,lon
-        const matches = url.matchAll(/[?&]loc=([0-9.-]+)%2C([0-9.-]+)/g);
+        // Поддерживаем как закодированные (%2C), так и обычные запятые
+        const matches = url.matchAll(/[?&]loc=([0-9.-]+)(?:%2C|,)([0-9.-]+)/g);
         
         for (const match of matches) {
             const lat = parseFloat(match[1]);

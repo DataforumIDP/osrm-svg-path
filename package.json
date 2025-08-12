@@ -5,6 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "server": "node src/server.js",
+    "dev": "node src/server.js",
     "generate": "node src/index.js",
     "clean": "del result\\map.svg"
   },
@@ -24,6 +26,6 @@
     "route",
     "routing"
   ],
-  "author": "",
+  "author": "Daniel <daniel.vn.rus@gmail.com>",
   "license": "MIT"
 }
